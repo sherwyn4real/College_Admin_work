@@ -1,13 +1,28 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
+#include<ctype.h>
 struct admin
 {
 	char user_name[15];
 	int pin;
 }a[10];
-FILE * fp;
-void data();
 
+struct student
+{
+	char s_name[30];
+	char address[100];
+	char gender;
+	int roll;
+	int age;
+	float cgpa;
+	};
+
+FILE * fp;
+FILE * fs;
+void menu();
+void delete();
+void display();
 
 
 
@@ -26,77 +41,135 @@ void menu()
 {
 	 struct check
 	{
-		char u-name;
+		char u_name[15];
 		int p;
-	}s; 
+	}x; 
 	
-	
-	data();   //data to be filled in admin.dat beforehand
-	int i=1;
-	char name;
-	int code;
+	int i=0;
+	char name[15];
+	int code,c;
 	fp=fopen("Admin.dat","rb");
+	char choice;
 		
+    start:
 	printf("Please enter your username\n");
-	scanf("%s",&name);
+	gets(name);
+	
 	printf("Please enter your unique 4-digit pin\n");
 	scanf("%d",&code);
-	while(i++==10)
+	while((getchar())!='\n');
+	
+	
+	
+	while(fread(&x,sizeof(x),1,fp)==1)
 	{
-		fread(&s,sizeof(s),1,fp);
-		if(strcmp(s.u-name,name)==0 && s.p==code)
+		if((strcmp(x.u_name,name)==0) && x.p==code)
+		{
+			i=1;
 			break;
-		}	
-		
-		
-	if(i<=10)
-		{	do
+		}
+	}
+	if (i==0)
+	{
+		printf("Incorrect username or password. Please enter again\n");
+		rewind(fp);goto start;
+	}
+	
+	else   
+{
+			do
 			{
 				printf("Welcome %s!\n",name);
-				printf("Please select your operation:\n");
-				printf("1.Search for a student's record	2.Delete student's record	3.Obtain overall performance	0.logout\n");
-				scanf("%d",&c);
+				printf("The file consists of the following entries\n"); 
+			    display();
+				begin:
+				printf("\nPlease select your operation:\n");
+				printf("1.Search for a student's record   2.Delete student's record   3.Obtain overall performance   0.logout\n");
+				scanf("%d",&c);		
 				switch(c)
 				{
-					case 1:search(fp);break;
-					case 2:delete(fp);break;
-					case 3:result(fp);break;
+					//search();break;
+					case 2:do
+							{
+								delete();
+					            printf("Do you want to delete another entry?\n");
+					            printf("Enter 'y' or 'n'\n");
+					            scanf("%c",&choice);
+					            choice=tolower(choice);
+							}while(choice=='y');printf("This is the final data:\n");display();goto begin;
+					
+					//result();break;
+					case 0:printf("Successfully logged out\n");exit(0);
 					default:printf("Invalid choice. Please try again\n");
 				}
 				}while(c!=0);
-				
-					
-	
-	
-	
-	
+		}
 
+}
 
-void data()
+void delete()
 {
-	int i=1;
-	fp=fopen("Admin.dat","wb");
-	a[1].name="tesslyn";
-	a[1].pin=5491;
-	a[2].user_name="sherwyn";
-	a[2].pin=7791;
-	a[3].user_name="sajal"
-	a[3].pin=6979;
-	a[4].user_name="sebastian";
-	a[4].pin=5523;
-	a[5].user_name="ironman";
-	a[5].pin=3000;
-	a[6].user_name="joker";
-	a[6].pin=6666;
-	a[7].user_name="deadshot"
-	a[7].pin=6190;
-	a[8].user_name="hulk";
-	a[8].pin=7721;
-	a[9].user_name="chairman";
-	a[9].pin=7000;
-	a[10].user_name="bot";
-	a[10].pin=0000;
-	while(i++==10)
-		fwrite(&a[i],sizeof(a[i]),1,fp);
-	fclose(fp);
+	struct student c;
+	
+	int r; int f=0;
+	
+	FILE * fd;
+	fd=fopen("new.dat","wb");
+	fs=fopen("Student.dat","rb");
+	
+	start:
+	printf("Enter roll number of student\n");
+	scanf("%d",&r);
+	while((getchar())!='\n');
+
+	while(fread(&c,sizeof(c),1,fs)==1)
+		{
+		if(r==c.roll)
+		{
+			f=1;
+			break;
+		}
 	}
+
+	if(f==0)
+		{
+			printf("invalid entry. Please enter roll number again\n");
+			rewind(fs);
+			goto start;
+		}
+	rewind(fs);
+	while(fread(&c,sizeof(c),1,fs)==1)
+		if(c.roll!=r)
+			fwrite(&c,sizeof(c),1,fd);
+			
+	fclose(fs);
+	fclose(fd);		
+	remove("Student.dat");
+	rename("new.dat","Student.dat");
+}
+
+
+
+
+
+
+
+
+
+
+
+void display()
+{  
+	fs=fopen("Student.dat","rb");
+	printf("\n================================================================\n");
+	struct student stu;
+	
+	rewind(fs);
+	printf("%-20s%-10s%-50s%-10s%-10s%s\n","NAME","AGE","ADDRESS","GENDER","ROLL","CGPA");
+	
+	while(fread(&stu,sizeof(stu),1,fs)==1)
+			printf("%-20s%-10d%-50s%-10c%-10d%f\n",stu.s_name,stu.age,stu.address,stu.gender,stu.roll,stu.cgpa);
+
+	printf("================================================================\n");	
+	fclose(fs);
+}
