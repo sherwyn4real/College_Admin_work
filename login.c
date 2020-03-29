@@ -135,11 +135,9 @@ void delete()
 	fd=fopen("new.dat","wb");
 	
 	start:
-	//while((getchar())!='\n');
 	system(CLEAR_SCREEN);
 	display();
 	fs=fopen("Student.dat","rb");
-	//rewind(fs);
 	printf("Enter roll number of student to be removed\n:");
 	scanf("%d",&r);
 	while((getchar())!='\n');
@@ -157,7 +155,6 @@ void delete()
 		{
 			printf("invalid entry. Press enter to enter roll number again!\n");
 			getchar();
-			//rewind(fs);
 			goto start;
 		}
 	rewind(fs);
@@ -190,13 +187,17 @@ void display()
 
 void search()
 {
-	fs = fopen("Student.dat","rb");
 	struct student stu;
 	int xroll,size = sizeof(stu),flag=0;
 	
+	system(CLEAR_SCREEN);
+	display();
+	fs = fopen("Student.dat","rb");
 	printf("\nEnter Student Roll no: ");
 	scanf("%d",&xroll);
 	while((getchar())!='\n'); //to clear the input stream
+	system(CLEAR_SCREEN);
+	
 	printf("------------------------------------------------------------\n");
 	
 	while(fread(&stu,size,1,fs)==1)
