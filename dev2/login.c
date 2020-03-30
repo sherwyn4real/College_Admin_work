@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
-	#define CLEAR_SCREEN "cls"			//command for windows cmd
+	#define CLEAR_SCREEN "cls"		//command for windows cmd
 #elif defined(linux)
 	#define CLEAR_SCREEN "clear"		//command for linux terminal
 #else
@@ -20,7 +20,7 @@ struct student
 	int age;
 	int contact_no;
 	float cgpa;
-	};
+};
 
 FILE * fp;
 FILE * fs;
@@ -30,7 +30,8 @@ void display();
 void search();
 void exam_result();
 void sort_struct(struct student[],int);
-int back_key=1;
+void clearinputstream();
+int go_back;
 
 int main()
 {  
@@ -39,27 +40,25 @@ int main()
 		
 void menu()
 {
-	 struct check
+	struct check
 	{
 		char u_name[15];
 		int p;
-	}x; 
+	}x;
 	
 	int i=0;
 	char name[15];
-	int code,c;
+	int code,option;
 	fp=fopen("Admin.dat","rb");
 	char choice;
 		
-    start:
+	start:
 	printf("Please enter your username\n");
 	scanf("%s",name);
-	
+
 	printf("Please enter your unique 4-digit pin\n");
 	scanf("%d",&code);
-	while((getchar())!='\n');
-	
-	
+	clearinputstream();
 	
 	while(fread(&x,sizeof(x),1,fp)==1)
 	{
@@ -69,6 +68,7 @@ void menu()
 			break;
 		}
 	}
+		
 	if (i==0)
 	{
 		system(CLEAR_SCREEN);
@@ -76,115 +76,113 @@ void menu()
 		rewind(fp);
 		goto start;
 	}
-	
 	else   
-{
-			do
+	{
+		do
+		{
+			system(CLEAR_SCREEN);
+			printf("Welcome %s!\n",name);
+			printf("The file consists of the following entries\n");
+			display();
+			printf("\nPlease select your operation:\n");
+			printf("1.Search for a student's record   2.Delete student's record   3.Obtain overall performance   0.logout\n");
+			scanf("%d",&option);
+			clearinputstream();
+			switch(option)
 			{
-				begin:
-				system(CLEAR_SCREEN);
-				printf("Welcome %s!\n",name);
-				printf("The file consists of the following entries\n"); 
-			    display();
-			    start_again:
-				printf("\nPlease select your operation:\n");
-				printf("1.Search for a student's record   2.Delete student's record   3.Obtain overall performance   0.logout\n");
-				scanf("%d",&c);
-				switch(c)
-				{
-					case 1:
-						do
+				case 1:
+					do
+					{
+						go_back = 0;
+						search();
+						if(go_back == 0)
 						{
-							search();
 							printf("Do you want to search another entry?(y/n):\n");
 							scanf("\n%c",&choice);
-							choice=tolower(choice);				
-						}while(choice=='y');
-						break;
-					case 2:
-						do
+							choice=tolower(choice);
+						}
+					}while(choice=='y' && go_back == 0);
+					break;
+				case 2:
+					do
+					{
+						go_back = 0;
+						delete();
+						if(go_back==0)
 						{
-							delete();
-							if(back_key==0)
-							goto start_again;
-							else
-							{
-								printf("Successfully deleted record!\nDo you want to delete another record?\n");
-								printf("Enter 'y' or 'n'\n");
-								scanf("\n%c",&choice);
-								choice=tolower(choice);
-							}
-						}while(choice=='y');
-						goto begin;
-						break;
-					case 3:	
-						exam_result();
-						break;
-					case 0:
-						system(CLEAR_SCREEN);
-						printf("Successfully logged out\n");
-						exit(0);
-					default:
-						printf("Invalid choice. Please try again\n");
-				}
-				}while(c!=0);
-		}
+							printf("Successfully deleted record!\nDo you want to delete another record?\n");
+							printf("Enter 'y' or 'n'\n");
+							scanf("\n%c",&choice);
+							choice=tolower(choice);
+						}
+					}while(choice=='y' && go_back==0);
+					//goto begin;
+					break;
+				case 3:
+					exam_result();
+					break;
+				case 0:
+					system(CLEAR_SCREEN);
+					printf("Successfully logged out\n");
+					break;
+				default:
+					printf("Invalid choice! Hit Enter To try again\n");
+					getchar();
+			}
+		}while(option!=0);
+	}
 
 }
 
 void delete()
 {
 	struct student c;
-	
-	int r; int f=0;
-	
-	FILE * fd;
-	fd=fopen("new.dat","wb");
+	int r=-1; int f=0;
 	
 	start:
 	system(CLEAR_SCREEN);
 	display();
-	fs=fopen("Student.dat","rb");
 	printf("Enter roll number of student to be removed. Press 0 to return to Main Menu\n:");
 	scanf("%d",&r);
-		while((getchar())!='\n');
+	clearinputstream();
 
-		if(r==0)
-		{   
-		fclose(fd);
-		fclose(fs);
-		remove("new.dat");
-		back_key=0;
-		}
-
-		else
-		{
-		while(fread(&c,sizeof(c),1,fs)==1)
-		{
-		if(r==c.roll)
-		{
-			f=1;
-			break;
-		}
+	if(r==0)
+	{   
+		go_back=1;
 	}
 
-	if(f==0)
+	else
+	{
+		FILE * fd;
+		fd=fopen("new.dat","wb");
+		fs=fopen("Student.dat","rb");
+		
+		while(fread(&c,sizeof(c),1,fs)==1)
+		{
+			if(r==c.roll)
+			{
+				f=1;
+				break;
+			}
+		}
+
+		if(f==0)
 		{
 			printf("invalid entry. Press enter to enter roll number again!\n");
 			getchar();
 			goto start;
 		}
-	rewind(fs);
-	while(fread(&c,sizeof(c),1,fs)==1)
-		if(c.roll!=r)
-			fwrite(&c,sizeof(c),1,fd);
+		rewind(fs);
+		while(fread(&c,sizeof(c),1,fs)==1)
+			if(c.roll!=r)
+				fwrite(&c,sizeof(c),1,fd);
 			
-	fclose(fs);
-	fclose(fd);		
-	remove("Student.dat");
-	rename("new.dat","Student.dat");
-	system(CLEAR_SCREEN);
-}
+		fclose(fs);
+		fclose(fd);		
+		remove("Student.dat");
+		rename("new.dat","Student.dat");
+		system(CLEAR_SCREEN);
+	}
 }
 
 void display()
@@ -205,32 +203,38 @@ void display()
 
 void search()
 {
-	struct student stu;
-	int xroll,size = sizeof(stu),flag=0;
+	int xroll;
 	
 	system(CLEAR_SCREEN);
 	display();
-	fs = fopen("Student.dat","rb");
-	printf("\nEnter Student Roll no: ");
+	printf("\nEnter Student Roll no or Enter 0 to return to Main Menu\n:");
 	scanf("%d",&xroll);
 	while((getchar())!='\n'); //to clear the input stream
 	system(CLEAR_SCREEN);
 	
-	printf("------------------------------------------------------------\n");
+	if(xroll!=0) {
+		printf("------------------------------------------------------------\n");
+		struct student stu;
+		int size = sizeof(struct student),flag=0;
+		fs = fopen("Student.dat","rb");
 	
-	while(fread(&stu,size,1,fs)==1)
-		if(stu.roll == xroll)
-		{
-			printf("Name: %s\nRoll no: %d\tCGPA: %f\nContact no: %d\n",stu.s_name,stu.roll,stu.cgpa,stu.contact_no);
-			printf("Address: %s\nAge: %-5dGender: %c\n",stu.address,stu.age,stu.gender);
-			flag = 1;
-			break;
-		}
+		while(fread(&stu,size,1,fs)==1)
+			if(stu.roll == xroll)
+			{
+				printf("Name: %s\nRoll no: %d\tCGPA: %f\nContact no: %d\n",stu.s_name,stu.roll,stu.cgpa,stu.contact_no);
+				printf("Address: %s\nAge: %-5dGender: %c\n",stu.address,stu.age,stu.gender);
+				flag = 1;
+				break;
+			}
 
-	if(flag==0)
-		printf("Record with roll no:%d not found! Check the number you entered!\n",xroll);
-	printf("------------------------------------------------------------\n");
-	fclose(fs);
+		if(flag==0)
+			printf("Record with roll no:%d not found! Check the number you entered!\n",xroll);
+	
+		fclose(fs);
+		printf("------------------------------------------------------------\n");
+	}
+	else 
+		go_back = 1;
 }
 
 void exam_result()
@@ -282,11 +286,10 @@ void exam_result()
 	
 	for(int i=0;i<=no_records-1;i++)
 		printf("%-6d%-20s%-10d%-6f\n",i+1,stu[i].s_name,stu[i].roll,stu[i].cgpa);
-	printf("\n-------------------------------------------------------------\n");
 	
+	printf("\n-------------------------------------------------------------\n");
 	printf("Press Enter To Return To Main Menu");
-	char temp;
-	scanf("%c%c",&temp,&temp);
+	getchar();
 	
 	fclose(fs);
 }
@@ -305,4 +308,9 @@ void sort_struct(struct student *e,int n)
 				e[i] = e[i+1];
 				e[i+1] = temp;
 			}
+}
+
+void clearinputstream()
+{
+	while((getchar())!='\n');
 }
