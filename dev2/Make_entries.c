@@ -1,7 +1,7 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 void display();
 FILE *fs;
@@ -15,6 +15,7 @@ struct student
 	char gender;
 	int roll;
 	int age;
+	int contact_no;
 	float cgpa;
 	};
 
@@ -41,7 +42,7 @@ int main()
 	printf("CGPA: "); scanf("%f",&s[i].cgpa);
 	printf("ADDRESS: "); scanf("\n%[^\n]s",s[i].address);
 	printf("GENDER: "); scanf("\n%c",&s[i].gender);
-	
+	printf("CONTACT NO: "); scanf("\n%d",&s[i].contact_no);
 		
 		fwrite(&s[i],sizeof(s[i]),1,fs);
 	}	
